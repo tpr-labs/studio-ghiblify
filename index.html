@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Ghiblify | Image to Art Converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #f0f7f4;
+            color: #2c3e50;
+        }
+        
+        .bg-ghibli {
+            background: linear-gradient(135deg, #e0f2fe 0%, #dcfce7 100%);
+        }
+
+        /* Custom Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #0ea5e9;
+            cursor: pointer;
+            margin-top: -6px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #cbd5e1;
+            border-radius: 2px;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .drop-zone.drag-active {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        /* Select Styling */
+        select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            -webkit-print-color-adjust: exact;
+            appearance: none;
+        }
+
+        /* Canvas Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="bg-ghibli min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-sky-500"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+                    <span class="font-bold text-xl tracking-tight text-slate-800">Studio Ghiblify</span>
+                </div>
+                <div class="text-sm text-slate-500 hidden sm:block">Advanced JS Filters • Privacy First</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8 flex flex-col items-center">
+        
+        <div class="text-center mb-8 max-w-2xl">
+            <h1 class="text-4xl font-bold text-slate-800 mb-3">Turn Photos into Art</h1>
+            <p class="text-slate-600 text-lg">Over 15 painterly and illustration styles running directly in your browser.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-[1600px] overflow-hidden border border-gray-100 flex flex-col lg:flex-row min-h-[750px]">
+            
+            <!-- Sidebar Controls -->
+            <div class="w-full lg:w-80 bg-slate-50 border-r border-gray-200 p-6 flex flex-col gap-5 z-10 order-2 lg:order-1 flex-shrink-0">
+                
+                <!-- Upload -->
+                <div class="mb-1">
+                    <h3 class="font-bold text-slate-700 mb-3 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        1. Source Image
+                    </h3>
+                    <div id="drop-zone" class="drop-zone border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:bg-sky-50 hover:border-sky-400 transition-colors cursor-pointer group">
+                        <input type="file" id="file-input" class="hidden" accept="image/*">
+                        <div class="text-slate-400 group-hover:text-sky-500 transition-colors">
+                            <p class="text-sm font-medium">Click or Drag Image</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="controls" class="opacity-50 pointer-events-none transition-opacity duration-300 space-y-6">
+                    
+                    <!-- Style Selector -->
+                    <div>
+                        <h3 class="font-bold text-slate-700 mb-2 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="M2 12l5 5"/><path d="M2 12l5-5"/></svg>
+                            2. Select Style
+                        </h3>
+                        <div class="relative">
+                            <select id="style-select" class="w-full bg-white border border-gray-300 text-slate-700 py-3 px-4 pr-8 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent font-medium shadow-sm max-h-60 overflow-y-auto">
+                                <optgroup label="Popular">
+                                    <option value="ghibli">Ghibli (Anime Background)</option>
+                                    <option value="watercolor">Soft Watercolor</option>
+                                    <option value="oil">Classic Oil Painting</option>
+                                </optgroup>
+                                <optgroup label="Painterly & Soft">
+                                    <option value="dreamy">Dreamy Watercolor</option>
+                                    <option value="gouache">Gouache Illustration</option>
+                                    <option value="pastel">Pastel Drawing</option>
+                                    <option value="acrylic">Acrylic Paint</option>
+                                    <option value="monet">Impressionism (Monet)</option>
+                                </optgroup>
+                                <optgroup label="Illustration & Ink">
+                                    <option value="shinkai">Vibrant Anime (Shinkai)</option>
+                                    <option value="softanime">Soft Anime</option>
+                                    <option value="storybook">Storybook Illustration</option>
+                                    <option value="sketch">Pencil Sketch</option>
+                                    <option value="inkwash">Ink Wash (Sumi-e)</option>
+                                    <option value="coloredpencil">Colored Pencil</option>
+                                </optgroup>
+                                <optgroup label="Stylized">
+                                    <option value="vintage">Vintage Anime (Cel)</option>
+                                    <option value="ukyioe">Ukiyo-e (Woodblock)</option>
+                                    <option value="popart">Pop Art</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Fine Tune -->
+                    <div class="space-y-4 pt-4 border-t border-gray-200">
+                        <h3 class="font-bold text-slate-700 mb-2">3. Fine Tune</h3>
+                        
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-sm">
+                                <label class="font-medium text-slate-700">Paint Smoothing</label>
+                                <span class="text-xs text-slate-400">Higher = More abstract</span>
+                            </div>
+                            <input type="range" id="smooth-radius" min="0" max="8" value="4" step="1" class="w-full">
+                        </div>
+
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-sm">
+                                <label class="font-medium text-slate-700">Edge Strength</label>
+                            </div>
+                            <input type="range" id="edge-strength" min="0" max="100" value="70" class="w-full">
+                        </div>
+
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-sm">
+                                <label class="font-medium text-slate-700">Vibrance / Boost</label>
+                            </div>
+                            <input type="range" id="vibrance" min="0" max="100" value="40" class="w-full">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-6 border-t border-gray-200 space-y-3">
+                    <button id="btn-process" disabled class="w-full bg-sky-500 hover:bg-sky-600 disabled:bg-slate-300 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2">
+                        <span id="btn-text">Apply Filter</span>
+                    </button>
+                    <button id="btn-download" disabled class="w-full bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 text-white font-medium py-3 px-4 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2">
+                        Download Result
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Display Area -->
+            <div class="relative w-full bg-[#374151] overflow-hidden order-1 lg:order-2 flex flex-col h-auto custom-scroll p-4" id="canvas-container">
+                
+                <!-- Initial State -->
+                <div id="placeholder-msg" class="text-center absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <div class="w-24 h-24 bg-slate-600 rounded-full mx-auto mb-4 flex items-center justify-center text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><image x="4" y="4" width="16" height="16" rx="2"/></svg>
+                    </div>
+                    <p class="text-slate-400 font-medium">Upload an image to start</p>
+                </div>
+
+                <!-- Split View Container -->
+                <div id="split-view" class="hidden w-full h-full flex flex-row gap-4 items-stretch relative">
+                    
+                    <!-- Original (Collapsible) -->
+                    <div id="original-panel" class="hidden flex-col w-1/3 min-w-[300px] gap-2 flex-shrink-0 h-full border-r border-white/10 pr-2 transition-all">
+                        <div class="flex justify-between items-end px-2">
+                            <span class="text-white/80 font-bold text-sm uppercase tracking-wider">Original</span>
+                        </div>
+                        <div class="flex-1 bg-black/20 rounded-lg overflow-hidden border border-white/10 shadow-lg relative flex items-center justify-center p-2">
+                            <canvas id="canvas-original" class="max-w-full max-h-full object-contain"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Result (Large Main Area) -->
+                    <div class="flex-1 flex flex-col gap-2 h-full relative">
+                        
+                        <!-- Toggle Button (Absolute) -->
+                        <button id="btn-toggle-view" class="absolute top-4 left-4 z-40 bg-white/90 backdrop-blur text-slate-700 hover:bg-white hover:text-sky-600 px-3 py-2 rounded-lg shadow-lg text-xs font-bold flex items-center gap-2 transition-all border border-slate-200 group">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <span id="toggle-text">Compare Original</span>
+                        </button>
+
+                        <div class="flex justify-between items-end px-2 pl-36"> <!-- Padding left for button space -->
+                            <span class="text-sky-400 font-bold text-xl uppercase tracking-wider">Processed Result</span>
+                        </div>
+                        <div class="flex-1 bg-black/20 rounded-lg overflow-hidden border-2 border-sky-500/30 shadow-2xl relative flex items-center justify-center p-2">
+                            <canvas id="canvas-processed" class="max-w-full max-h-full object-contain"></canvas>
+                             <!-- Loading Overlay -->
+                            <div id="loader-overlay" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center text-white">
+                                <div class="loader mb-4 border-t-sky-400 border-white/20"></div>
+                                <p class="text-lg font-medium animate-pulse" id="loading-text">Applying Filter...</p>
+                                <p class="text-xs text-slate-400 mt-2">Processing Pixels...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        
+        <div id="toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-xl opacity-0 transition-opacity duration-300 pointer-events-none z-50 text-sm font-medium flex items-center gap-2 border border-slate-700">
+            <svg class="text-green-400" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span id="toast-msg">Action Completed</span>
+        </div>
+
+    </main>
+
+    <script>
+        // --- State Management ---
+        const state = {
+            originalImage: null,
+            maxWidth: 1280, 
+            maxHeight: 1280
+        };
+
+        const els = {
+            dropZone: document.getElementById('drop-zone'),
+            fileInput: document.getElementById('file-input'),
+            controls: document.getElementById('controls'),
+            btnProcess: document.getElementById('btn-process'),
+            btnDownload: document.getElementById('btn-download'),
+            placeholder: document.getElementById('placeholder-msg'),
+            splitView: document.getElementById('split-view'),
+            originalPanel: document.getElementById('original-panel'),
+            btnToggleView: document.getElementById('btn-toggle-view'),
+            toggleText: document.getElementById('toggle-text'),
+            canvasOrig: document.getElementById('canvas-original'),
+            canvasProc: document.getElementById('canvas-processed'),
+            loader: document.getElementById('loader-overlay'),
+            toast: document.getElementById('toast'),
+            loadingText: document.getElementById('loading-text'),
+            inputs: {
+                style: document.getElementById('style-select'),
+                smooth: document.getElementById('smooth-radius'),
+                edges: document.getElementById('edge-strength'),
+                vib: document.getElementById('vibrance')
+            }
+        };
+
+        // --- Drag & Drop / Input Handlers ---
+        els.dropZone.addEventListener('click', () => els.fileInput.click());
+        els.dropZone.addEventListener('dragover', (e) => { e.preventDefault(); els.dropZone.classList.add('drag-active'); });
+        els.dropZone.addEventListener('dragleave', () => els.dropZone.classList.remove('drag-active'));
+        els.dropZone.addEventListener('drop', (e) => { e.preventDefault(); els.dropZone.classList.remove('drag-active'); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+        els.fileInput.addEventListener('change', (e) => { if(e.target.files[0]) handleFile(e.target.files[0]); });
+        
+        els.btnProcess.addEventListener('click', processImage);
+        els.btnDownload.addEventListener('click', downloadImage);
+
+        // View Toggle Logic
+        els.btnToggleView.addEventListener('click', () => {
+            const isHidden = els.originalPanel.classList.contains('hidden');
+            if(isHidden) {
+                els.originalPanel.classList.remove('hidden');
+                els.originalPanel.classList.add('flex');
+                els.toggleText.textContent = 'Hide Original';
+            } else {
+                els.originalPanel.classList.add('hidden');
+                els.originalPanel.classList.remove('flex');
+                els.toggleText.textContent = 'Compare Original';
+            }
+        });
+
+        // Auto-update ranges text or presets when style changes
+        els.inputs.style.addEventListener('change', updatePresets);
+
+        function updatePresets() {
+            const style = els.inputs.style.value;
+            let s=4, e=50, v=40; // Defaults
+
+            switch(style) {
+                case 'ghibli': s=4; e=70; v=40; break;
+                case 'watercolor': s=5; e=20; v=30; break;
+                case 'oil': s=8; e=0; v=60; break;
+                case 'dreamy': s=6; e=10; v=20; break;
+                case 'gouache': s=7; e=30; v=50; break;
+                case 'pastel': s=5; e=40; v=10; break;
+                case 'acrylic': s=6; e=10; v=70; break;
+                case 'monet': s=8; e=0; v=80; break;
+                case 'shinkai': s=3; e=60; v=70; break;
+                case 'softanime': s=4; e=50; v=30; break;
+                case 'storybook': s=5; e=40; v=50; break;
+                case 'sketch': s=2; e=90; v=0; break;
+                case 'inkwash': s=6; e=60; v=0; break;
+                case 'coloredpencil': s=1; e=80; v=60; break;
+                case 'vintage': s=3; e=80; v=20; break;
+                case 'ukyioe': s=4; e=90; v=50; break;
+                case 'popart': s=0; e=100; v=100; break;
+            }
+            els.inputs.smooth.value = s;
+            els.inputs.edges.value = e;
+            els.inputs.vib.value = v;
+        }
+
+        // --- Core Functions ---
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) return showToast('Invalid image type');
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const scale = Math.min(1, state.maxWidth / img.width, state.maxHeight / img.height);
+                    const w = Math.floor(img.width * scale);
+                    const h = Math.floor(img.height * scale);
+                    [els.canvasOrig, els.canvasProc].forEach(c => { c.width = w; c.height = h; });
+                    const ctx = els.canvasOrig.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    // Fill processed with original initially
+                    const ctxProc = els.canvasProc.getContext('2d');
+                    ctxProc.drawImage(img, 0, 0, w, h);
+                    
+                    state.originalImage = img;
+                    
+                    els.placeholder.classList.add('hidden');
+                    els.splitView.classList.remove('hidden');
+                    els.splitView.classList.add('flex'); // Ensure flex is on
+                    
+                    // Ensure panel starts hidden for new images
+                    els.originalPanel.classList.add('hidden');
+                    els.originalPanel.classList.remove('flex');
+                    els.toggleText.textContent = 'Compare Original';
+
+                    els.controls.classList.remove('opacity-50', 'pointer-events-none');
+                    els.btnProcess.disabled = false;
+                    els.btnDownload.disabled = true;
+                    
+                    updatePresets();
+                    // Trigger process on load
+                    setTimeout(processImage, 200);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showLoading(show) {
+            els.loader.classList.toggle('hidden', !show);
+            els.btnProcess.disabled = show;
+        }
+
+        function showToast(msg) {
+            document.getElementById('toast-msg').textContent = msg;
+            els.toast.classList.remove('opacity-0');
+            setTimeout(() => els.toast.classList.add('opacity-0'), 3000);
+        }
+
+        function downloadImage() {
+            if (!state.originalImage) return;
+            const link = document.createElement('a');
+            link.download = `art-filter-${Date.now()}.png`;
+            link.href = els.canvasProc.toDataURL('image/png');
+            link.click();
+            showToast('Saved to Device');
+        }
+
+        // --- ADVANCED IMAGE PROCESSING ---
+
+        async function processImage() {
+            if (!state.originalImage) return;
+            showLoading(true);
+            
+            const style = els.inputs.style.value;
+            els.loadingText.textContent = `Applying ${style.charAt(0).toUpperCase() + style.slice(1)} Style...`;
+
+            // Wait for UI render
+            await new Promise(r => setTimeout(r, 50));
+
+            const ctx = els.canvasProc.getContext('2d', { willReadFrequently: true });
+            const w = els.canvasProc.width;
+            const h = els.canvasProc.height;
+
+            // Reset canvas with original to grab data
+            ctx.drawImage(state.originalImage, 0, 0, w, h);
+            const originalData = ctx.getImageData(0, 0, w, h);
+            
+            // Params
+            let smoothRadius = parseInt(els.inputs.smooth.value);
+            const edgeStr = parseInt(els.inputs.edges.value);
+            const vibVal = parseInt(els.inputs.vib.value);
+            
+            // 1. KUWAHARA FILTER (Generalized)
+            let baseData;
+            const skipSmooth = ['sketch', 'coloredpencil', 'popart'];
+            if (smoothRadius > 0 && !skipSmooth.includes(style)) {
+                baseData = applyKuwahara(originalData, w, h, smoothRadius);
+            } else {
+                baseData = originalData;
+            }
+
+            // 2. MAIN PASS (Color Grading)
+            const final = ctx.createImageData(w, h);
+            const d = final.data;
+            const b = baseData.data;
+            
+            // Helpers
+            const getLuma = (r,g,bl) => (r*0.299 + g*0.587 + bl*0.114);
+            const saturate = (r,g,bl, amt) => {
+                const avg = (r+g+bl)/3;
+                return [
+                    avg + (r - avg) * amt,
+                    avg + (g - avg) * amt,
+                    avg + (bl - avg) * amt
+                ];
+            }
+            const contrast = (r,g,bl, amt) => {
+                const intercept = 128 * (1 - amt);
+                return [r*amt+intercept, g*amt+intercept, bl*amt+intercept];
+            }
+
+            for (let i = 0; i < d.length; i += 4) {
+                let r = b[i]; let g = b[i+1]; let bl = b[i+2];
+                let lum = getLuma(r,g,bl);
+
+                // --- STYLE SPECIFIC COLOR GRADING ---
+                if (style === 'ghibli' || style === 'softanime') {
+                    const boost = (vibVal / 100) * 0.6;
+                    if (g > r && g > bl) { g *= (1+boost); r *= (1+boost*0.5); } // Lush greens
+                    else if (bl > r && bl > g) { bl *= (1+boost); r*=0.95; } // Deep blues
+                    else { r *= (1+boost*0.2); g *= (1+boost*0.2); }
+                    if(style === 'softanime') { [r,g,bl] = saturate(r,g,bl, 0.9); r*=1.1; g*=1.1; bl*=1.1; } // Brighten
+
+                } else if (style === 'watercolor' || style === 'dreamy') {
+                    r *= 1.15; g *= 1.15; bl *= 1.15; // High brightness (paper)
+                    const sat = style === 'dreamy' ? 0.7 + (vibVal/400) : 0.85 + (vibVal/300);
+                    [r,g,bl] = saturate(r,g,bl, sat);
+                    
+                } else if (style === 'gouache' || style === 'storybook') {
+                    [r,g,bl] = saturate(r,g,bl, 1.1 + vibVal/200);
+                    r = Math.floor(r/10)*10; g = Math.floor(g/10)*10; bl = Math.floor(b/10)*10; // Subtle posterize
+                    if(style === 'storybook') { r*=1.05; g*=1.02; bl*=0.95; } // Warm shift
+
+                } else if (style === 'oil' || style === 'acrylic' || style === 'monet') {
+                    [r,g,bl] = contrast(r,g,bl, 1.1);
+                    const sat = style === 'monet' ? 1.5 : 1.3;
+                    [r,g,bl] = saturate(r,g,bl, sat + vibVal/200);
+                    if(style === 'acrylic') { r*=1.05; g*=1.05; bl*=1.05; } // Brighter than oil
+
+                } else if (style === 'pastel') {
+                    r *= 1.2; g *= 1.2; bl *= 1.2; // Very bright
+                    [r,g,bl] = saturate(r,g,bl, 0.6 + vibVal/300); // Low saturation chalk
+
+                } else if (style === 'shinkai') {
+                    [r,g,bl] = contrast(r,g,bl, 1.25);
+                    if (bl > g && bl > r) { bl *= 1.3; r *= 0.8; } // Dramatic sky
+
+                } else if (style === 'vintage') {
+                    [r,g,bl] = saturate(r,g,bl, 0.7); // Muted
+                    r*=1.05; bl*=0.95; // Sepia tint
+
+                } else if (style === 'ukyioe') {
+                     // Highly stylized palette limitation attempt
+                     lum = getLuma(r,g,bl);
+                     if (r > g+50 && r > bl+50) { r=220; g=60; bl=60; } // Red
+                     else if (bl > r+30 && bl > g+30) { r=40; g=80; bl=180; } // Deep Blue
+                     else if (lum > 200) { r=245; g=240; bl=230; } // Paper
+                     else { [r,g,bl] = saturate(r,g,bl, 0.8); }
+
+                } else if (style === 'popart') {
+                    // Extreme Posterization
+                    const levels = 3; const step = 255/(levels-1);
+                    r = Math.round(r/step)*step;
+                    g = Math.round(g/step)*step;
+                    bl = Math.round(bl/step)*step;
+                    [r,g,bl] = saturate(r,g,bl, 1.5);
+
+                } else if (style === 'sketch' || style === 'inkwash') {
+                    r = g = bl = (style === 'sketch' ? 245 : lum * 1.1); // Paper base or grayscale
+
+                } else if (style === 'coloredpencil') {
+                    [r,g,bl] = saturate(r,g,bl, 1.2);
+                    // Add noise to simulate pencil texture
+                    const noise = (Math.random() - 0.5) * 30;
+                    r+=noise; g+=noise; bl+=noise;
+                }
+
+                d[i] = Math.max(0, Math.min(255, r));
+                d[i+1] = Math.max(0, Math.min(255, g));
+                d[i+2] = Math.max(0, Math.min(255, bl));
+                d[i+3] = 255;
+            }
+
+            // 3. EDGE DETECTION PASS (Composite on top)
+            // We use the original image data for crisp edge detection
+            const o = originalData.data; 
+            const w4 = w * 4;
+            let threshold = (100 - edgeStr) * 2;
+            if(['sketch','coloredpencil'].includes(style)) threshold = 30;
+            if(['dreamy','monet'].includes(style)) threshold = 200; // Almost no edges
+
+            for (let y = 1; y < h - 1; y++) {
+                for (let x = 1; x < w - 1; x++) {
+                    const idx = (y * w + x) * 4;
+                    
+                    // Simple Sobel approximation using luma differences
+                    const pCenter = getLuma(o[idx], o[idx+1], o[idx+2]);
+                    const pRight = getLuma(o[idx+4], o[idx+5], o[idx+6]);
+                    const pBottom = getLuma(o[idx+w4], o[idx+w4+1], o[idx+w4+2]);
+                    
+                    const mag = Math.abs(pCenter - pRight) + Math.abs(pCenter - pBottom);
+                    
+                    if (mag > threshold) {
+                        let darkFactor = 0.5; // Default ink strength
+
+                        if (style === 'sketch' || style === 'coloredpencil') {
+                             // Pencil texture edges
+                             const intensity = Math.min(1, mag/300);
+                             d[idx] *= (1-intensity); d[idx+1] *= (1-intensity); d[idx+2] *= (1-intensity);
+                        } else if (style === 'watercolor' || style === 'dreamy' || style === 'pastel') {
+                            // Colored, soft edges
+                            d[idx] *= 0.85; d[idx+1] *= 0.85; d[idx+2] *= 0.85;
+                        } else if (style === 'popart' || style === 'ukyioe' || style === 'vintage') {
+                            // Thick black outlines
+                            d[idx] = 40; d[idx+1] = 40; d[idx+2] = 40;
+                        } else if (style === 'inkwash') {
+                             d[idx] *= 0.3; d[idx+1] *= 0.3; d[idx+2] *= 0.3;
+                        } else if (!['oil', 'monet', 'acrylic'].includes(style)) {
+                            // Standard ink for others
+                            d[idx] *= darkFactor; d[idx+1] *= darkFactor; d[idx+2] *= darkFactor;
+                        }
+                    }
+                }
+            }
+
+            ctx.putImageData(final, 0, 0);
+            showLoading(false);
+            els.btnDownload.disabled = false;
+            showToast('Filter Applied');
+        }
+
+        // --- Kuwahara Filter Implementation (Optimized) ---
+        function applyKuwahara(imageData, width, height, radius) {
+            const output = new ImageData(width, height);
+            const data = imageData.data;
+            const dest = output.data;
+            const w4 = width * 4;
+
+            for (let y = 0; y < height; y++) {
+                // Bounds check for window
+                const yStart = Math.max(0, y - radius);
+                const yEnd = Math.min(height - 1, y + radius);
+
+                for (let x = 0; x < width; x++) {
+                    const idx = (y * width + x) * 4;
+                    const xStart = Math.max(0, x - radius);
+                    const xEnd = Math.min(width - 1, x + radius);
+
+                    let minVar = Number.MAX_VALUE;
+                    let bestMean = [data[idx], data[idx+1], data[idx+2]];
+
+                    // Evaluate 4 quadrants approx
+                    const quadrants = [
+                        [yStart, y, xStart, x], // TL
+                        [yStart, y, x, xEnd],   // TR
+                        [y, yEnd, xStart, x],   // BL
+                        [y, yEnd, x, xEnd]      // BR
+                    ];
+
+                    for (let q = 0; q < 4; q++) {
+                        let rSum=0, gSum=0, bSum=0, rSqSum=0, gSqSum=0, bSqSum=0, count=0;
+                        const [ys, ye, xs, xe] = quadrants[q];
+
+                        for (let yy = ys; yy <= ye; yy++) {
+                            const rowOff = yy * w4;
+                            for (let xx = xs; xx <= xe; xx++) {
+                                const i = rowOff + xx * 4;
+                                const r=data[i], g=data[i+1], b=data[i+2];
+                                rSum+=r; gSum+=g; bSum+=b;
+                                rSqSum+=r*r; gSqSum+=g*g; bSqSum+=b*b;
+                                count++;
+                            }
+                        }
+                        if (count === 0) continue;
+                        const rm=rSum/count, gm=gSum/count, bm=bSum/count;
+                        const variance = (rSqSum+gSqSum+bSqSum)/count - (rm*rm+gm*gm+bm*bm);
+                        if (variance < minVar) { minVar = variance; bestMean = [rm, gm, bm]; }
+                    }
+                    dest[idx] = bestMean[0]; dest[idx+1] = bestMean[1]; dest[idx+2] = bestMean[2]; dest[idx+3] = 255;
+                }
+            }
+            return output;
+        }
+    </script>
+</body>
+</html>
