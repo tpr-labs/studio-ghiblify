@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Studio Ghiblify | Image to Art Converter</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -90,7 +90,7 @@
         }
     </style>
 </head>
-<body class="bg-ghibli h-screen flex flex-col overflow-hidden">
+<body class="bg-ghibli h-[100dvh] flex flex-col overflow-hidden">
 
     <!-- Navbar -->
     <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200 flex-shrink-0">
@@ -106,26 +106,29 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-grow container mx-auto px-4 py-4 flex flex-col items-center h-full overflow-hidden">
+    <main class="flex-grow container mx-auto px-2 sm:px-4 py-2 sm:py-4 flex flex-col items-center h-full overflow-hidden w-full">
         
-        <!-- App Container (Constrained Height) -->
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-[1800px] overflow-hidden border border-gray-100 flex flex-col lg:flex-row h-[calc(100vh-6rem)]">
+        <!-- App Container -->
+        <!-- Fixed height logic changed to flex-grow with max-bounds -->
+        <div class="bg-white rounded-xl sm:rounded-2xl shadow-xl w-full max-w-[1800px] overflow-hidden border border-gray-100 flex flex-col lg:flex-row h-full max-h-[calc(100dvh-5rem)]">
             
             <!-- Sidebar Controls (Scrollable) -->
-            <div class="w-full lg:w-80 bg-slate-50 border-r border-gray-200 p-6 flex flex-col gap-5 z-10 order-2 lg:order-1 flex-shrink-0 overflow-y-auto custom-scroll">
+            <!-- Mobile: Order 2 (Bottom), Max Height restricted. Desktop: Order 1, Full Height -->
+            <div class="w-full lg:w-80 bg-slate-50 border-t lg:border-t-0 lg:border-r border-gray-200 p-4 sm:p-6 flex flex-col gap-4 sm:gap-5 z-10 order-2 lg:order-1 flex-shrink-0 overflow-y-auto custom-scroll h-auto max-h-[40%] lg:h-full lg:max-h-full">
                 
                 <!-- Header in Sidebar for Mobile context mainly -->
-                <div class="lg:hidden mb-4 pb-4 border-b border-gray-200">
-                    <h1 class="text-2xl font-bold text-slate-800">Photo to Art</h1>
+                <div class="lg:hidden mb-2 pb-2 border-b border-gray-200 flex justify-between items-center">
+                    <h1 class="text-lg font-bold text-slate-800">Controls</h1>
+                    <span class="text-xs text-slate-400">Scroll for more</span>
                 </div>
 
                 <!-- Upload -->
                 <div class="mb-1 flex-shrink-0">
-                    <h3 class="font-bold text-slate-700 mb-3 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <h3 class="font-bold text-slate-700 mb-2 flex items-center gap-2 text-sm sm:text-base">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                         1. Source Image
                     </h3>
-                    <div id="drop-zone" class="drop-zone border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:bg-sky-50 hover:border-sky-400 transition-colors cursor-pointer group">
+                    <div id="drop-zone" class="drop-zone border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:bg-sky-50 hover:border-sky-400 transition-colors cursor-pointer group">
                         <input type="file" id="file-input" class="hidden" accept="image/*">
                         <div class="text-slate-400 group-hover:text-sky-500 transition-colors">
                             <p class="text-sm font-medium">Click or Drag Image</p>
@@ -133,16 +136,16 @@
                     </div>
                 </div>
 
-                <div id="controls" class="opacity-50 pointer-events-none transition-opacity duration-300 space-y-6 flex-shrink-0">
+                <div id="controls" class="opacity-50 pointer-events-none transition-opacity duration-300 space-y-4 sm:space-y-6 flex-shrink-0">
                     
                     <!-- Style Selector -->
                     <div>
-                        <h3 class="font-bold text-slate-700 mb-2 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="M2 12l5 5"/><path d="M2 12l5-5"/></svg>
+                        <h3 class="font-bold text-slate-700 mb-2 flex items-center gap-2 text-sm sm:text-base">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="M2 12l5 5"/><path d="M2 12l5-5"/></svg>
                             2. Select Style
                         </h3>
                         <div class="relative">
-                            <select id="style-select" class="w-full bg-white border border-gray-300 text-slate-700 py-3 px-4 pr-8 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent font-medium shadow-sm">
+                            <select id="style-select" class="w-full bg-white border border-gray-300 text-slate-700 py-2 sm:py-3 px-4 pr-8 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent font-medium shadow-sm text-sm sm:text-base">
                                 <optgroup label="Popular">
                                     <option value="ghibli">Ghibli (Anime Background)</option>
                                     <option value="watercolor">Soft Watercolor</option>
@@ -173,26 +176,26 @@
                     </div>
 
                     <!-- Fine Tune -->
-                    <div class="space-y-4 pt-4 border-t border-gray-200">
-                        <h3 class="font-bold text-slate-700 mb-2">3. Fine Tune</h3>
+                    <div class="space-y-3 sm:space-y-4 pt-4 border-t border-gray-200">
+                        <h3 class="font-bold text-slate-700 mb-1 text-sm sm:text-base">3. Fine Tune</h3>
                         
                         <div class="space-y-1">
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-xs sm:text-sm">
                                 <label class="font-medium text-slate-700">Paint Smoothing</label>
-                                <span class="text-xs text-slate-400">Higher = More abstract</span>
+                                <span class="text-xs text-slate-400">Higher = Abstract</span>
                             </div>
                             <input type="range" id="smooth-radius" min="0" max="8" value="4" step="1" class="w-full">
                         </div>
 
                         <div class="space-y-1">
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-xs sm:text-sm">
                                 <label class="font-medium text-slate-700">Edge Strength</label>
                             </div>
                             <input type="range" id="edge-strength" min="0" max="100" value="70" class="w-full">
                         </div>
 
                         <div class="space-y-1">
-                            <div class="flex justify-between text-sm">
+                            <div class="flex justify-between text-xs sm:text-sm">
                                 <label class="font-medium text-slate-700">Vibrance / Boost</label>
                             </div>
                             <input type="range" id="vibrance" min="0" max="100" value="40" class="w-full">
@@ -200,61 +203,66 @@
                     </div>
                 </div>
 
-                <div class="mt-auto pt-6 border-t border-gray-200 space-y-3 flex-shrink-0 pb-4">
-                    <button id="btn-process" disabled class="w-full bg-sky-500 hover:bg-sky-600 disabled:bg-slate-300 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2">
+                <div class="mt-auto pt-4 sm:pt-6 border-t border-gray-200 space-y-3 flex-shrink-0 pb-2">
+                    <button id="btn-process" disabled class="w-full bg-sky-500 hover:bg-sky-600 disabled:bg-slate-300 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2 text-sm sm:text-base">
                         <span id="btn-text">Apply Filter</span>
                     </button>
-                    <button id="btn-download" disabled class="w-full bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 text-white font-medium py-3 px-4 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2">
+                    <button id="btn-download" disabled class="w-full bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 text-white font-medium py-3 px-4 rounded-xl transition-all shadow-md active:scale-95 flex justify-center items-center gap-2 text-sm sm:text-base">
                         Download Result
                     </button>
                 </div>
             </div>
 
-            <!-- Main Display Area (Fixed Bounds) -->
-            <div class="relative w-full bg-[#374151] overflow-hidden order-1 lg:order-2 flex flex-col h-full p-4" id="canvas-container">
+            <!-- Main Display Area -->
+            <!-- Mobile: Order 1 (Top), Takes remaining space (flex-1) -->
+            <div class="relative w-full bg-[#374151] overflow-hidden order-1 lg:order-2 flex flex-col flex-1 min-h-0 p-2 sm:p-4" id="canvas-container">
                 
                 <!-- Initial State -->
-                <div id="placeholder-msg" class="text-center absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <div class="w-24 h-24 bg-slate-600 rounded-full mx-auto mb-4 flex items-center justify-center text-slate-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><image x="4" y="4" width="16" height="16" rx="2"/></svg>
+                <div id="placeholder-msg" class="text-center absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full px-4">
+                    <div class="w-20 h-20 sm:w-24 sm:h-24 bg-slate-600 rounded-full mx-auto mb-4 flex items-center justify-center text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><image x="4" y="4" width="16" height="16" rx="2"/></svg>
                     </div>
-                    <p class="text-slate-400 font-medium">Upload an image to start</p>
+                    <p class="text-slate-400 font-medium text-sm sm:text-base">Upload an image to start</p>
                 </div>
 
                 <!-- Split View Container -->
-                <div id="split-view" class="hidden w-full h-full flex flex-row gap-4 items-stretch relative">
+                <!-- Mobile: Flex-col (Vertical stack), Desktop: Flex-row -->
+                <div id="split-view" class="hidden w-full h-full flex-col lg:flex-row gap-2 sm:gap-4 items-stretch relative">
                     
                     <!-- Original (Collapsible) -->
-                    <div id="original-panel" class="hidden flex-col w-1/3 min-w-[300px] gap-2 flex-shrink-0 h-full border-r border-white/10 pr-2 transition-all">
-                        <div class="flex justify-between items-end px-2 flex-shrink-0">
-                            <span class="text-white/80 font-bold text-sm uppercase tracking-wider">Original</span>
+                    <!-- Mobile: Full Width, Fixed Height. Desktop: Fixed Width, Full Height -->
+                    <div id="original-panel" class="hidden flex-shrink-0 transition-all border-b lg:border-b-0 lg:border-r border-white/10 pb-2 lg:pb-0 lg:pr-2 lg:w-1/3 lg:min-w-[300px] h-32 lg:h-full">
+                        <div class="flex justify-between items-end px-2 flex-shrink-0 mb-1">
+                            <span class="text-white/80 font-bold text-xs uppercase tracking-wider">Original</span>
                         </div>
-                        <div class="flex-1 bg-black/20 rounded-lg overflow-hidden border border-white/10 shadow-lg relative flex items-center justify-center p-2">
+                        <div class="h-full bg-black/20 rounded-lg overflow-hidden border border-white/10 shadow-lg relative flex items-center justify-center p-2">
                             <canvas id="canvas-original" class="max-w-full max-h-full object-contain"></canvas>
                         </div>
                     </div>
 
                     <!-- Result (Large Main Area) -->
-                    <div class="flex-1 flex flex-col gap-2 h-full relative min-w-0">
+                    <div class="flex-1 flex flex-col gap-2 h-full relative min-w-0 min-h-0">
                         
                         <!-- Toggle Button (Absolute) -->
-                        <button id="btn-toggle-view" class="absolute top-4 left-4 z-40 bg-white/90 backdrop-blur text-slate-700 hover:bg-white hover:text-sky-600 px-3 py-2 rounded-lg shadow-lg text-xs font-bold flex items-center gap-2 transition-all border border-slate-200 group">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                            <span id="toggle-text">Compare Original</span>
+                        <button id="btn-toggle-view" class="absolute top-2 left-2 sm:top-4 sm:left-4 z-40 bg-white/90 backdrop-blur text-slate-700 hover:bg-white hover:text-sky-600 px-2 py-1 sm:px-3 sm:py-2 rounded-lg shadow-lg text-[10px] sm:text-xs font-bold flex items-center gap-1 sm:gap-2 transition-all border border-slate-200 group">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <span id="toggle-text">Compare</span>
                         </button>
 
-                        <div class="flex justify-between items-end px-2 pl-36 flex-shrink-0">
-                            <span class="text-sky-400 font-bold text-xl uppercase tracking-wider">Processed Result</span>
+                        <div class="flex justify-end lg:justify-between items-end px-2 flex-shrink-0">
+                             <!-- Spacer for mobile absolute button -->
+                             <div class="w-24 lg:hidden"></div>
+                            <span class="text-sky-400 font-bold text-sm sm:text-xl uppercase tracking-wider">Processed Result</span>
                         </div>
                         
                         <!-- Canvas Wrapper (Constrains the canvas) -->
-                        <div class="flex-1 bg-black/20 rounded-lg overflow-hidden border-2 border-sky-500/30 shadow-2xl relative flex items-center justify-center p-2 min-h-0">
+                        <div class="flex-1 bg-black/20 rounded-lg overflow-hidden border-2 border-sky-500/30 shadow-2xl relative flex items-center justify-center p-1 sm:p-2 min-h-0">
                             <!-- Canvas scales to fit this container -->
                             <canvas id="canvas-processed" class="max-w-full max-h-full object-contain"></canvas>
                              <!-- Loading Overlay -->
                             <div id="loader-overlay" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex-col items-center justify-center text-white">
                                 <div class="loader mb-4 border-t-sky-400 border-white/20"></div>
-                                <p class="text-lg font-medium animate-pulse" id="loading-text">Applying Filter...</p>
+                                <p class="text-base sm:text-lg font-medium animate-pulse" id="loading-text">Applying Filter...</p>
                                 <p class="text-xs text-slate-400 mt-2">Processing Pixels...</p>
                             </div>
                         </div>
@@ -319,12 +327,13 @@
             const isHidden = els.originalPanel.classList.contains('hidden');
             if(isHidden) {
                 els.originalPanel.classList.remove('hidden');
-                els.originalPanel.classList.add('flex');
+                els.originalPanel.classList.add('flex'); // Only adds flex class
+                // Ensure flex-col direction is applied implicitly by parent container settings or reset if needed
                 els.toggleText.textContent = 'Hide Original';
             } else {
                 els.originalPanel.classList.add('hidden');
                 els.originalPanel.classList.remove('flex');
-                els.toggleText.textContent = 'Compare Original';
+                els.toggleText.textContent = 'Compare';
             }
         });
 
@@ -385,7 +394,7 @@
                     // Ensure panel starts hidden for new images
                     els.originalPanel.classList.add('hidden');
                     els.originalPanel.classList.remove('flex');
-                    els.toggleText.textContent = 'Compare Original';
+                    els.toggleText.textContent = 'Compare';
 
                     els.controls.classList.remove('opacity-50', 'pointer-events-none');
                     els.btnProcess.disabled = false;
